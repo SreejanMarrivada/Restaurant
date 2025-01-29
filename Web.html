@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Ordering System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .menu-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+        }
+        .admin-controls {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Initial Role Selection -->
+    <div id="role-selection" class="form-section">
+        <h2>Welcome to Our Restaurant</h2>
+        <select id="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button onclick="handleRoleSelection()">Continue</button>
+    </div>
+
+    <!-- User Login Form -->
+    <div id="user-login" class="form-section hidden">
+        <h2>User Information</h2>
+        <input type="text" id="userName" placeholder="Your Name">
+        <input type="tel" id="userPhone" placeholder="Phone Number">
+        <button onclick="showMenu()">View Menu</button>
+    </div>
+
+    <!-- Menu Section -->
+    <div id="menu-section" class="form-section hidden">
+        <h2>Today's Menu</h2>
+        <div id="menu-items"></div>
+        <button onclick="calculateBill()">Place Order</button>
+    </div>
+
+    <!-- Bill Section -->
+    <div id="bill-section" class="form-section hidden">
+        <h2>Your Bill</h2>
+        <p>Name: <span id="bill-name"></span></p>
+        <p>Phone: <span id="bill-phone"></span></p>
+        <div id="bill-details"></div>
+        <p>Total: ₹<span id="bill-total">0</span></p>
+    </div>
+
+    <!-- Admin Login -->
+    <div id="admin-login" class="form-section hidden">
+        <h2>Admin Login</h2>
+        <input type="text" id="adminUser" placeholder="Username">
+        <input type="password" id="adminPass" placeholder="Password">
+        <button onclick="adminLogin()">Login</button>
+    </div>
+
+    <!-- Admin Controls -->
+    <div id="admin-controls" class="form-section hidden">
+        <h2>Admin Controls</h2>
+        <div class="admin-controls">
+            <button onclick="showAddDishForm()">Add New Dish</button>
+            <button onclick="showDeleteDishForm()">Delete Dish</button>
+            <button onclick="showUpdatePriceForm()">Update Price</button>
+        </div>
+
+        <div id="add-dish-form" class="hidden">
+            <input type="text" id="newDishName" placeholder="Dish Name">
+            <input type="number" id="newDishPrice" placeholder="Price">
+            <button onclick="addNewDish()">Add Dish</button>
+        </div>
+
+        <div id="delete-dish-form" class="hidden">
+            <input type="text" id="deleteDishName" placeholder="Dish Name">
+            <button onclick="deleteDish()">Delete Dish</button>
+        </div>
+
+        <div id="update-price-form" class="hidden">
+            <input type="text" id="updateDishName" placeholder="Dish Name">
+            <input type="number" id="newPrice" placeholder="New Price">
+            <button onclick="updatePrice()">Update Price</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let menu = [
+            { name: "Butter Chicken", price: 250 },
+            { name: "Dal Makhani", price: 180 },
+            { name: "Naan", price: 30 },
+            { name: "Biryani", price: 200 }
+        ];
+
+        function handleRoleSelection() {
+            const role = document.getElementById('role').value;
+            document.getElementById('role-selection').classList.add('hidden');
+            
+            if (role === 'user') {
+                document.getElementById('user-login').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-login').classList.remove('hidden');
+            }
+        }
+
+        function showMenu() {
+            const name = document.getElementById('userName').value;
+            const phone = document.getElementById('userPhone').value;
+            
+            if (!name || !phone) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            currentUser = { name, phone };
+            document.getElementById('user-login').classList.add('hidden');
+            document.getElementById('menu-section').classList.remove('hidden');
+            
+            // Display menu
+            const menuItemsDiv = document.getElementById('menu-items');
+            menuItemsDiv.innerHTML = menu.map((item, index) => `
+                <div class="menu-item">
+                    <input type="checkbox" id="dish-${index}" value="${item.price}">
+                    <label for="dish-${index}">${item.name} - ₹${item.price}</label>
+                </div>
+            `).join('');
+        }
+
+        function calculateBill() {
+            const checkboxes = document.querySelectorAll('#menu-items input[type="checkbox"]:checked');
+            let total = 0;
+            let items = [];
+            
+            checkboxes.forEach(checkbox => {
+                total += parseInt(checkbox.value);
+                items.push(checkbox.nextElementSibling.textContent.split(' - ')[0]);
+            });
+
+            document.getElementById('bill-section').classList.remove('hidden');
+            document.getElementById('bill-name').textContent = currentUser.name;
+            document.getElementById('bill-phone').textContent = currentUser.phone;
+            document.getElementById('bill-details').textContent = items.join(', ');
+            document.getElementById('bill-total').textContent = total;
+        }
+
+        function adminLogin() {
+            const username = document.getElementById('adminUser').value;
+            const password = document.getElementById('adminPass').value;
+            
+            if (username === "Sreejan" && password === "Sreejan004") {
+                document.getElementById('admin-login').classList.add('hidden');
+                document.getElementById('admin-controls').classList.remove('hidden');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function showAddDishForm() {
+            document.querySelectorAll('#admin-controls > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('add-dish-form').classList.remove('hidden');
+        }
+
+        function addNewDish() {
+            const name = document.getElementById('newDishName').value;
+            const price = parseInt(document.getElementById('newDishPrice').value);
+            
+            if (name && price) {
+                menu.push({ name, price });
+                alert('Dish added successfully!');
+            }
+        }
+
+        function showDeleteDishForm() {
+            document.querySelectorAll('#admin-controls > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('delete-dish-form').classList.remove('hidden');
+        }
+
+        function deleteDish() {
+            const name = document.getElementById('deleteDishName').value;
+            menu = menu.filter(item => item.name !== name);
+            alert('Dish deleted successfully!');
+        }
+
+        function showUpdatePriceForm() {
+            document.querySelectorAll('#admin-controls > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('update-price-form').classList.remove('hidden');
+        }
+
+        function updatePrice() {
+            const name = document.getElementById('updateDishName').value;
+            const newPrice = parseInt(document.getElementById('newPrice').value);
+            
+            const dish = menu.find(item => item.name === name);
+            if (dish) {
+                dish.price = newPrice;
+                alert('Price updated successfully!');
+            }
+        }
+    </script>
+</body>
+</html>

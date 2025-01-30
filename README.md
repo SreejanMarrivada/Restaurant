@@ -1,1 +1,1 @@
-currently only contains raw html with no backend .just a prototype
+currently only contains raw html with no backend and no images.just a prototype
